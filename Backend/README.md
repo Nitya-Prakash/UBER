@@ -96,3 +96,96 @@ Returned when something goes wrong on the server side.
 - The password is automatically hashed before being stored in the database.
 - The returned JWT token is signed using the server’s secret key (`process.env.JWT_SECRET`).
 - The password field will **never be returned** in any response for security reasons.
+
+# User Login Endpoint
+
+## Endpoint
+
+`POST /user/login`
+
+## Description
+
+This endpoint allows an existing user to **log in** by providing their email and password.
+On successful authentication, it returns a **JWT authentication token** along with the user details.
+
+---
+
+## Request Body
+
+The request body must be in **JSON format**:
+
+```json
+{
+  "email": "johndoe@example.com",
+  "password": "securePassword123"
+}
+```
+
+### Field Requirements
+
+- **email**: (String) Required, must be a valid email address.
+- **password**: (String) Required, minimum 6 characters.
+
+---
+
+## Response
+
+### Success Response (200 OK)
+
+If the login is successful, the server responds with:
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6...",
+  "user": {
+    "_id": "650f15be1c23c9a124c93e7d",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "johndoe@example.com",
+    "socketId": null
+  }
+}
+```
+
+- **token**: A JWT token to be used for authenticated requests.
+- **user**: The user object without the password field.
+
+---
+
+## Error Responses
+
+### 400 Bad Request
+
+Returned when validation fails (e.g., missing fields, invalid email format, or short password).
+
+```json
+{
+  "errors": [
+    {
+      "msg": "Password must be atleast 6 characters long",
+      "param": "password",
+      "location": "body"
+    }
+  ]
+}
+```
+
+### 401 Unauthorized
+
+Returned when email or password is incorrect.
+
+```json
+{
+  "message": "Invalid email or password"
+}
+```
+
+---
+
+## Notes
+
+- The password provided in the request is compared with the **hashed password** stored in the database.
+- If authentication succeeds, a signed **JWT token** is generated using `process.env.JWT_SECRET`.
+- The `password` field is always excluded from the returned user object for security.
